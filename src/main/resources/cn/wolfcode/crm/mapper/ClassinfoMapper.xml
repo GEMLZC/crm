@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.crm.mapper.ClassinfoMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Classinfo">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="number" jdbcType="INTEGER" property="number"/>
+        <association property="emp" javaType="Employee" columnPrefix="e_">
+            <id property="id" column="id"/>
+            <id property="name" column="name"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from classinfo
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.wolfcode.crm.domain.Classinfo"
+            useGeneratedKeys="true">
+    insert into classinfo (name, number, employee_id)
+    values (#{name,jdbcType=VARCHAR}, #{number,jdbcType=INTEGER}, #{emp.id})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Classinfo">
+    update classinfo
+    set name = #{name,jdbcType=VARCHAR},
+      number = #{number,jdbcType=INTEGER},
+      employee_id = #{emp.id,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select id, name, number, employee_id
+    from classinfo
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        select c.id,c.`name`,c.number,e.id e_id,e.`name` e_name
+        from classinfo c left join employee e on c.employee_id = e.id
+        <include refid="classResult"/>
+  </select>
+    <sql id="classResult">
+        <where>
+            <if test="keyword != null">
+                and (c.name like concat('%',#{keyword},'%') or
+                c.number like concat('%',#{keyword},'%'))
+            </if>
+            <if test="empId != -1 &amp;&amp; empId != 0">
+                and e.id = #{empId}
+            </if>
+        </where>
+    </sql>
+</mapper>

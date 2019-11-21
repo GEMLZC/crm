@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx
+		http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context.xsd">
+	<context:component-scan
+		base-package="cn.wolfcode.crm" />
+	<context:property-placeholder
+		location="classpath:db.properties" />
+
+	<bean class="com.alibaba.druid.pool.DruidDataSource"
+		id="dataSource">
+		<property name="driverClassName"
+			value="${jdbc.driverClassName}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="url" value="${jdbc.url}" />
+	</bean>
+
+	<bean class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="mapperLocations"
+			value="classpath:cn/wolfcode/crm/mapper/*Mapper.xml" />
+        <!--别名配置-->
+		<property name="typeAliasesPackage"
+			value="cn.wolfcode.crm.domain" />
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+		<property name="plugins">
+            <!--分页插件配置-->
+			<array>
+				<bean class="com.github.pagehelper.PageInterceptor">
+					<property name="properties">
+						<value>
+                            reasonable=true
+                        </value>
+					</property>
+				</bean>
+			</array>
+		</property>
+	</bean>
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="cn.wolfcode.crm.mapper"/>
+	</bean>
+	
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+
+</beans>

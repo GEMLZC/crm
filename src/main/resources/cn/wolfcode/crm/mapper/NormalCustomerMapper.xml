@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.crm.mapper.NormalCustomerMapper">
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.NormalCustomer">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="inputTime" jdbcType="TIMESTAMP" property="inputTime" />
+    <result column="money" jdbcType="DECIMAL" property="money" />
+      <association property="customer" javaType="cn.wolfcode.crm.domain.Customer" columnPrefix="c_">
+          <id column="id" property="id"/>
+          <result column="name" property="name"/>
+      </association>
+      <association property="course" javaType="cn.wolfcode.crm.domain.Systemdictionaryitem" columnPrefix="s_">
+          <id column="id" property="id"/>
+          <result column="title" property="title"/>
+      </association>
+   </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from normalcustomer
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.wolfcode.crm.domain.NormalCustomer" useGeneratedKeys="true">
+    insert into normalcustomer (inputTime, customer_id, course_id, 
+      money)
+    values (now(), #{customer.id,jdbcType=BIGINT}, #{course.id,jdbcType=BIGINT},
+      #{money,jdbcType=DECIMAL})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.NormalCustomer">
+    update normalcustomer
+    set inputTime = #{inputtime,jdbcType=TIMESTAMP},
+      customer_id = #{customer.id,jdbcType=BIGINT},
+      course_id = #{course.id,jdbcType=BIGINT},
+      money = #{money,jdbcType=DECIMAL}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select id, inputTime, customer_id, course_id, money
+    from normalcustomer
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select n.id,c.id c_id,c.name c_name,s.id s_id,s.title s_title,
+      n.inputTime,n.money
+    from normalcustomer n left join customer c on n.customer_id=c.id
+    left join systemdictionaryitem s on n.course_id=s.id
+    <where>
+        <if test="sellerId != -1">
+            and c.seller_id = #{sellerId}
+        </if>
+        <if test="keyword != null">
+            and c.name like concat('%',#{keyword},'%')
+        </if>
+        <if test="courseId != -1">
+            and n.course_id = #{courseId}
+        </if>
+    </where>
+  </select>
+</mapper>

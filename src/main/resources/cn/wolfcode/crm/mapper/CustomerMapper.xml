@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.crm.mapper.CustomerMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Customer">
+        <id column="id"  property="id"/>
+        <result column="name"  property="name"/>
+        <result column="age" property="age"/>
+        <result column="gender"  property="gender"/>
+        <result column="tel"  property="tel"/>
+        <result column="qq" property="qq"/>
+        <result column="input_time" jdbcType="TIMESTAMP" property="inputTime"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <association property="job" javaType="Systemdictionaryitem" columnPrefix="si_">
+            <id property="id" column="id"/>
+            <result property="title" column="title"/>
+        </association>
+
+        <association property="source" javaType="Systemdictionaryitem" columnPrefix="s_">
+            <id property="id" column="id"/>
+            <result property="title" column="title"/>
+        </association>
+
+        <association property="inputuser" javaType="Employee" columnPrefix="el_">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+        </association>
+
+        <association property="seller" javaType="Employee" columnPrefix="e_">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+        </association>
+
+    </resultMap>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from customer
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.wolfcode.crm.domain.Customer"
+            useGeneratedKeys="true">
+    insert into customer (name, age, gender, 
+      tel, qq, job_id, source_id, 
+      seller_id, inputUser_id, input_time, 
+      status)
+    values (#{name,jdbcType=VARCHAR}, #{age,jdbcType=INTEGER}, #{gender,jdbcType=INTEGER}, 
+      #{tel,jdbcType=VARCHAR}, #{qq,jdbcType=VARCHAR}, #{job.id,jdbcType=BIGINT}, #{source.id,jdbcType=BIGINT}, 
+      #{seller.id,jdbcType=BIGINT}, #{inputuser.id,jdbcType=BIGINT}, now(),
+      #{status,jdbcType=INTEGER})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Customer">
+    update customer
+    set name = #{name,jdbcType=VARCHAR},
+      age = #{age,jdbcType=INTEGER},
+      gender = #{gender,jdbcType=INTEGER},
+      tel = #{tel,jdbcType=VARCHAR},
+      qq = #{qq,jdbcType=VARCHAR},
+      job_id = #{job.id,jdbcType=BIGINT},
+      source_id = #{source.id,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <update id="updateSellerIdById">
+        update customer
+        set seller_id = #{newsellerID}
+        where id = #{customerId}
+    </update>
+    <update id="updateStatus">
+         update customer
+            set status = #{status}
+            where id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select id, name, age, gender, tel, qq, job_id, source_id, seller_id, inputUser_id, 
+    input_time, status
+    from customer
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        c.id,
+        c.name,
+        c.age,
+        c.gender,
+        c.tel,
+        c.qq,
+        si.id si_id,
+        si.title si_title,
+        s.id s_id,
+        s.title s_title,
+        e.id e_id,
+        e.`name` e_name,
+        el.id el_id,
+        el.`name` el_name,
+        c.input_time,
+        c.STATUS
+        FROM
+        customer c left join systemdictionaryitem si on c.job_id=si.id
+        left join systemdictionaryitem s on s.id=c.source_id
+        left join employee e on e.id=c.seller_id
+        left join employee el on c.inputUser_id=el.id
+        <include refid="customerCondition"/>
+  </select>
+    <sql id="customerCondition">
+        <where>
+            <if test="status != null">
+                c.`status` = #{status}
+            </if>
+            <if test="sellerId != -1">
+                and c.seller_id = #{seller.id}
+            </if>
+            <if test="keyword != null">
+                and (c.name like concat('%',#{keyword},'%')  or c.tel like concat('%',#{keyword},'%'))
+            </if>
+        </where>
+    </sql>
+    <select id="selectCustomerByStatus" resultMap="BaseResultMap">
+        select c.id,c.name
+        from customer c where c.status=#{status}
+    </select>
+    <update id="updateStatusWithNornal">
+         update customer
+            set status = 2
+            where id = #{id}
+    </update>
+</mapper>

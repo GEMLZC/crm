@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.crm.mapper.RoleMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Role">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="sn" jdbcType="VARCHAR" property="sn"/>
+        <collection property="permissions" column="id" select="cn.wolfcode.crm.mapper.PermissionMapper.selectByRoleId"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from role
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <delete id="deletePermissionRoleByRoleId">
+        delete from role_permission
+        where role_id=#{roleId}
+    </delete>
+    <delete id="deleteEmployeeRoleByRoleId">
+        delete from employee_role
+        where role_id=#{roleId}
+    </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.wolfcode.crm.domain.Role"
+            useGeneratedKeys="true">
+    insert into role (name, sn)
+    values (#{name,jdbcType=VARCHAR}, #{sn,jdbcType=VARCHAR})
+  </insert>
+    <insert id="insertRolePermission">
+        insert into role_permission values(#{roleId},#{permissionId})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Role">
+    update role
+    set name = #{name,jdbcType=VARCHAR},
+      sn = #{sn,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select id, name, sn
+    from role
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, name, sn
+    from role
+  </select>
+    <select id="selectByEmployeeKey" resultType="cn.wolfcode.crm.domain.Role">
+        select r.id,r.`name`,er.role_id
+        from role r join  employee_role er on r.id = er.role_id
+        where er.employee_id = #{id}
+    </select>
+    <select id="selectAllAndPagination" resultType="cn.wolfcode.crm.domain.Role">
+        select id, name,sn from role
+    </select>
+    <select id="selectByRoleName" resultType="cn.wolfcode.crm.domain.Role">
+         select id, name,sn from role where name=#{name}
+    </select>
+    <select id="selectSnByEmpId" resultType="java.lang.String">
+        select r.sn
+        from role r join  employee_role er on r.id = er.role_id
+        where er.employee_id = #{id}
+    </select>
+</mapper>

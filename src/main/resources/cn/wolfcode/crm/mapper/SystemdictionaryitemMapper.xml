@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wolfcode.crm.mapper.SystemdictionaryitemMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Systemdictionaryitem">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="parent_id" jdbcType="BIGINT" property="parentId"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="sequence" jdbcType="INTEGER" property="sequence"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from systemdictionaryitem
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+    <insert id="insert" keyColumn="id" keyProperty="id" parameterType="cn.wolfcode.crm.domain.Systemdictionaryitem"
+            useGeneratedKeys="true">
+    insert into systemdictionaryitem (parent_id, title, sequence
+      )
+    values (#{parentId,jdbcType=BIGINT}, #{title,jdbcType=VARCHAR}, #{sequence,jdbcType=INTEGER}
+      )
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Systemdictionaryitem">
+    update systemdictionaryitem
+    set parent_id = #{parentId,jdbcType=BIGINT},
+      title = #{title,jdbcType=VARCHAR},
+      sequence = #{sequence,jdbcType=INTEGER}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select id, parent_id, title, sequence
+    from systemdictionaryitem
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, parent_id, title, sequence
+    from systemdictionaryitem
+  </select>
+    <select id="selectAllList" resultMap="BaseResultMap">
+      select id, parent_id, title, sequence
+      from systemdictionaryitem where parent_id = #{parentId}
+    </select>
+    <select id="selectMaxSequenceByParentId" resultType="java.lang.Integer">
+        select MAX(sequence) from systemdictionaryitem s where s.parent_id = #{parentId}
+    </select>
+    <select id="selectDirBySn" resultType="cn.wolfcode.crm.domain.Systemdictionaryitem">
+        select si.id,si.title
+        from systemdictionary s left join systemdictionaryitem si
+        on s.id=si.parent_id
+        where s.sn = #{sn}
+    </select>
+</mapper>
